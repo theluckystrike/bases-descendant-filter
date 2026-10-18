@@ -1,0 +1,192 @@
+{
+ "slug": "bases-descendant-filter",
+ "module": "src/core",
+ "function": "findDescendants",
+ "cases": [
+  {
+   "name": "An empty root has no results",
+   "args": [
+    "",
+    []
+   ],
+   "expected": []
+  },
+  {
+   "name": "A chain reaches a grandchild",
+   "args": [
+    "A",
+    [
+     {
+      "path": "B",
+      "parents": [
+       "A"
+      ]
+     },
+     {
+      "path": "C",
+      "parents": [
+       "B"
+      ]
+     }
+    ]
+   ],
+   "expected": [
+    {
+     "path": "A",
+     "depth": 0,
+     "via": null
+    },
+    {
+     "path": "B",
+     "depth": 1,
+     "via": "A"
+    },
+    {
+     "path": "C",
+     "depth": 2,
+     "via": "B"
+    }
+   ]
+  },
+  {
+   "name": "A second parent can reach the root",
+   "args": [
+    "A",
+    [
+     {
+      "path": "C",
+      "parents": [
+       "Unrelated",
+       "A"
+      ]
+     }
+    ]
+   ],
+   "expected": [
+    {
+     "path": "A",
+     "depth": 0,
+     "via": null
+    },
+    {
+     "path": "C",
+     "depth": 1,
+     "via": "A"
+    }
+   ]
+  },
+  {
+   "name": "A cycle does not repeat the root",
+   "args": [
+    "A",
+    [
+     {
+      "path": "A",
+      "parents": [
+       "C"
+      ]
+     },
+     {
+      "path": "B",
+      "parents": [
+       "A"
+      ]
+     },
+     {
+      "path": "C",
+      "parents": [
+       "B"
+      ]
+     }
+    ]
+   ],
+   "expected": [
+    {
+     "path": "A",
+     "depth": 0,
+     "via": null
+    },
+    {
+     "path": "B",
+     "depth": 1,
+     "via": "A"
+    },
+    {
+     "path": "C",
+     "depth": 2,
+     "via": "B"
+    }
+   ]
+  },
+  {
+   "name": "Two routes use a shortest predecessor",
+   "args": [
+    "A",
+    [
+     {
+      "path": "B",
+      "parents": [
+       "A"
+      ]
+     },
+     {
+      "path": "C",
+      "parents": [
+       "A"
+      ]
+     },
+     {
+      "path": "D",
+      "parents": [
+       "B",
+       "C"
+      ]
+     }
+    ]
+   ],
+   "expected": [
+    {
+     "path": "A",
+     "depth": 0,
+     "via": null
+    },
+    {
+     "path": "B",
+     "depth": 1,
+     "via": "A"
+    },
+    {
+     "path": "C",
+     "depth": 1,
+     "via": "A"
+    },
+    {
+     "path": "D",
+     "depth": 2,
+     "via": "B"
+    }
+   ]
+  },
+  {
+   "name": "An unrelated branch is absent",
+   "args": [
+    "A",
+    [
+     {
+      "path": "X",
+      "parents": [
+       "Y"
+      ]
+     }
+    ]
+   ],
+   "expected": [
+    {
+     "path": "A",
+     "depth": 0,
+     "via": null
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,27 @@
+filters:
+  and:
+    - file.inFolder("Bases Descendant Filter/Relations")
+    - kind == "deliverable"
+views:
+  - type: bases-descendant-filter
+    name: Project
+    descendantRoot: Bases Descendant Filter/Relations/Project Alpha.md
+    descendantParent: note.parents
+    order:
+      - file.name
+      - note.status
+      - note.parents
+    sort:
+      - property: file.name
+        direction: ASC
+  - type: bases-descendant-filter
+    name: Design
+    descendantRoot: Bases Descendant Filter/Relations/Design.md
+    descendantParent: note.parents
+    order:
+      - file.name
+      - note.status
+      - note.parents
+    sort:
+      - property: file.name
+        direction: ASC

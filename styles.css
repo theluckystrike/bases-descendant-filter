@@ -1,0 +1,43 @@
+.bases-descendant-filter {
+ padding: var(--size-4-4);
+ overflow: auto;
+ height: 100%;
+}
+
+.bases-descendant-filter .bdf-toolbar {
+ display: flex;
+ align-items: center;
+ gap: var(--size-4-3);
+ flex-wrap: wrap;
+}
+
+.bases-descendant-filter .bdf-title {
+ font-weight: var(--font-semibold);
+ flex: 1;
+}
+
+.bases-descendant-filter .bdf-scope {
+ color: var(--text-muted);
+ font-size: var(--font-ui-small);
+}
+
+.bases-descendant-filter .bdf-warning {
+ color: var(--text-warning);
+}
+
+.bases-descendant-filter table {
+ width: 100%;
+ border-collapse: collapse;
+}
+
+.bases-descendant-filter th, .bases-descendant-filter td {
+ padding: var(--size-4-2);
+ text-align: start;
+ border-bottom: 1px solid var(--background-modifier-border);
+ overflow-wrap: anywhere;
+}
+
+.bdf-route li {
+ margin-block: var(--size-4-3);
+ overflow-wrap: anywhere;
+}

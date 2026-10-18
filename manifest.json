@@ -1,0 +1,11 @@
+{
+	"id": "bases-descendant-filter",
+	"name": "Bases Descendant Filter",
+	"version": "1.1.0",
+	"minAppVersion": "1.13.4",
+	"description": "Show Bases results that descend from a root through a note property.",
+	"author": "Michael Lip",
+	"authorUrl": "https://github.com/theluckystrike",
+	"fundingUrl": "https://github.com/sponsors/theluckystrike",
+	"isDesktopOnly": false
+}

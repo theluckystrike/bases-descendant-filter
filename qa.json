@@ -1,0 +1,53 @@
+[
+  {
+    "feature": "descendants",
+    "caption": "Follow parent links through hidden intermediates and cycles.",
+    "note": "Descendants.base",
+    "eval": "(async()=>{const fresh=app.workspace.getLeaf(false);await fresh.openFile(app.vault.getFileByPath('Bases Descendant Filter/Relations/Project Alpha.md'),{active:true});await fresh.openFile(app.vault.getFileByPath('Bases Descendant Filter/Descendants.base'),{active:true});app.workspace.setActiveLeaf(fresh,{focus:true});for(let i=0;i<100;i++){if(document.querySelector('.bdf-title')?.textContent==='Project Alpha \u00b7 5 matching notes')break;if(i===99)throw Error('Descendant view did not render');await new Promise(r=>setTimeout(r,100));}return 'ok';})()",
+    "zoom": 0.85
+  },
+  {
+    "feature": "query",
+    "caption": "Choose another root while retaining the deliverable query.",
+    "note": "Descendants.base",
+    "eval": "(async()=>{await app.workspace.openLinkText('Bases Descendant Filter/Descendants.base#Design','',false);for(let i=0;i<100;i++){if(document.querySelector('.bdf-title')?.textContent==='Design \u00b7 5 matching notes')break;if(i===99)throw Error('Descendant view did not render');await new Promise(r=>setTimeout(r,100));}return 'ok';})()",
+    "zoom": 0.85
+  },
+  {
+    "feature": "warnings",
+    "caption": "See unresolved parent links in the vault scan.",
+    "note": "Descendants.base",
+    "eval": "(async()=>{await app.workspace.openLinkText('Bases Descendant Filter/Descendants.base#Project','',false);for(let i=0;i<100;i++){if(document.querySelector('.bdf-title')?.textContent==='Project Alpha \u00b7 5 matching notes')break;if(i===99)throw Error('Descendant view did not render');await new Promise(r=>setTimeout(r,100));}return 'ok';})()",
+    "zoom": 0.85
+  },
+  {
+    "feature": "route",
+    "caption": "Explain a shortest route through a hidden intermediate.",
+    "note": "Descendants.base",
+    "eval": "(async()=>{const p=app.plugins.plugins['bases-descendant-filter'];p.pro.opts.http=async()=>({status:200,json:{data:{viewer:{login:'demo-reader'},user:{sponsorshipForViewerAsSponsor:{isActive:true,isOneTimePayment:false,tier:{name:'$5 a month',monthlyPriceInCents:500}}}}}});app.secretStorage.setSecret('bases-descendant-filter-github-token','gho_'+'0'.repeat(36));await p.pro.refreshNow();if(!p.pro.isPro())await p.pro.refreshNow();if(!p.pro.isPro())throw Error(\"Mock sponsorship did not activate\");await app.workspace.openLinkText('Bases Descendant Filter/Descendants.base#Project','',false);for(let i=0;i<100;i++){if(document.querySelector('.bdf-title')?.textContent==='Project Alpha \u00b7 5 matching notes')break;if(i===99)throw Error('Descendant view did not render');await new Promise(r=>setTimeout(r,100));}document.querySelector('tr[data-path=\"Bases Descendant Filter/Relations/Deep work.md\"] button').click();if(!document.querySelector('.bdf-route'))throw Error('Route modal did not open');return 'ok';})()",
+    "after": "app.plugins.plugins['bases-descendant-filter'].pro.signOut();'ok'",
+    "zoom": 0.9
+  },
+  {
+    "feature": "walkthrough",
+    "caption": "Read the table and inspect a route.",
+    "frames": [
+      {
+        "note": "Descendants.base",
+        "eval": "(async()=>{await app.workspace.openLinkText('Bases Descendant Filter/Descendants.base#Project','',false);for(let i=0;i<100;i++){if(document.querySelector('.bdf-title')?.textContent==='Project Alpha \u00b7 5 matching notes')break;if(i===99)throw Error('Descendant view did not render');await new Promise(r=>setTimeout(r,100));}return 'ok';})()",
+        "hold": 1500
+      },
+      {
+        "note": "Descendants.base",
+        "eval": "(async()=>{const p=app.plugins.plugins['bases-descendant-filter'];p.pro.opts.http=async()=>({status:200,json:{data:{viewer:{login:'demo-reader'},user:{sponsorshipForViewerAsSponsor:{isActive:true,isOneTimePayment:false,tier:{name:'$5 a month',monthlyPriceInCents:500}}}}}});app.secretStorage.setSecret('bases-descendant-filter-github-token','gho_'+'0'.repeat(36));await p.pro.refreshNow();if(!p.pro.isPro())await p.pro.refreshNow();if(!p.pro.isPro())throw Error(\"Mock sponsorship did not activate\");await app.workspace.openLinkText('Bases Descendant Filter/Descendants.base#Project','',false);for(let i=0;i<100;i++){if(document.querySelector('.bdf-title')?.textContent==='Project Alpha \u00b7 5 matching notes')break;if(i===99)throw Error('Descendant view did not render');await new Promise(r=>setTimeout(r,100));}document.querySelector('tr[data-path=\"Bases Descendant Filter/Relations/Deep work.md\"] button').click();if(!document.querySelector('.bdf-route'))throw Error('Route modal did not open');return 'ok';})()",
+        "hold": 1800
+      },
+      {
+        "note": "Descendants.base",
+        "eval": "app.plugins.plugins['bases-descendant-filter'].pro.signOut();'ok'",
+        "hold": 1500
+      }
+    ],
+    "zoom": 0.85
+  }
+]
