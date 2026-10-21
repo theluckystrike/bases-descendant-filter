@@ -54,6 +54,8 @@ To add another parent, change the property to a list. Put one wiki link in each 
 
 ## Settings
 
+After a minor or major update, this plugin opens one What's new tab in the background. The tab and settings card suggest other NoteMods plugins and Zovo Chat and link to notemods.com for feedback ([privacy](https://notemods.com/privacy/)). The tab sends no data. Turn the tab off in Settings.
+
 Root note, Parent property, and Include the root if it matches the query belong to the current view. The root is excluded by default. Enable the option when you want it in the output, and make sure the Bases query selects it too. If the root moves and the saved selection no longer resolves, choose its new path.
 
 The result table shows 100 notes per page. Use Next notes and Previous notes to inspect a larger result. This page size does not limit graph traversal. The table does not edit properties. Open a source note to change its parent links or other values.

@@ -1,0 +1,32 @@
+{
+	"id": "bases-descendant-filter",
+	"name": "Bases Descendant Filter",
+	"version": "1.2.0",
+	"changes": [
+		"New Send feedback command. It opens a page where you can report a problem or suggest an idea.",
+		"Adds a Bases descendant view with multi-parent traversal, cycle handling, and Pro route explanations."
+	],
+	"changes_user": [
+		"New Send feedback command. It opens a page where you can report a problem or suggest an idea.",
+		"Settings now end with a More from NoteMods group, where you can turn this tab off or open it again."
+	],
+	"tip": "Intermediate notes can stay outside the Bases query. The view still reads their parent links to connect the root to your notes.",
+	"thanks": "Hi, I am Michael, a solo developer in Poland. Bases Descendant Filter is one of over 100 small plugins that I make. Thank you for using it with Bases. Bases is still new, and your setups teach me a lot.",
+	"related": [
+		{
+			"id": "bases-filter-switches",
+			"name": "Bases Filter Switches",
+			"blurb": "Turn saved Bases filters on or off with switches."
+		},
+		{
+			"id": "bases-link-graph",
+			"name": "Bases Link Graph",
+			"blurb": "See the notes and links from a filtered base as a graph."
+		},
+		{
+			"id": "bases-freeze-panes",
+			"name": "Bases Freeze Panes",
+			"blurb": "Keep column and note names visible as you scroll a base."
+		}
+	]
+}

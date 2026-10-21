@@ -5,6 +5,8 @@ import { SPONSORS } from './pro';
 import { BasesDescendantFilterSettingTab } from './settings';
 import { DescendantView, VIEW_ID, viewOptions } from './view';
 import { RouteModal } from './route';
+import { setupHello } from './hello/index';
+import WHATS_NEW from './whats-new.json';
 export default class BasesDescendantFilterPlugin extends Plugin {
  pro: SponsorsManager | null = null;
  private modal: RouteModal | null = null;
@@ -15,6 +17,8 @@ export default class BasesDescendantFilterPlugin extends Plugin {
   view.register(() => this.views.delete(view)); return view;
  }
  onload(): void {
+   // First: "What's new" reads its state before the settings load (packages/hello). It does not wait.
+   setupHello(this, WHATS_NEW);
   this.disposed = false;
   const pro = createGitHubSponsors(this.app, this.manifest.id, SPONSORS, this); pro.init(); this.pro = pro;
   const tab = new BasesDescendantFilterSettingTab(this.app, this); this.addSettingTab(tab);

@@ -1,6 +1,6 @@
 {
 	"name": "bases-descendant-filter",
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"private": true,
 	"description": "Show Bases results that descend from a root through a note property.",
 	"main": "main.js",
