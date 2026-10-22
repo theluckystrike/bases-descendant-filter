@@ -1,11 +1,14 @@
 import { BasesView, normalizePath, parseLinktext, parsePropertyId, type BasesAllOptions, type BasesEntry, type QueryController } from 'obsidian';
 import { descendantRoute, findDescendants, parentLinkTexts, type ParentNode, type ReachableNote } from './core/index';
+import { formulaRoot, baseSourcePath } from './root';
 import type BasesDescendantFilterPlugin from './main';
+const ROOT_NOTE_LABEL = 'Root note';
 export const VIEW_ID = 'bases-descendant-filter';
-export const KEY = { root: 'descendantRoot', parent: 'descendantParent', includeRoot: 'descendantIncludeRoot' };
+export const KEY = { rootFormula: 'descendantRootFormula', root: 'descendantRoot', parent: 'descendantParent', includeRoot: 'descendantIncludeRoot' };
 export function viewOptions(): BasesAllOptions[] {
  return [
-  { type: 'file', key: KEY.root, displayName: 'Root note', placeholder: 'Choose a Markdown note', filter: (file) => file.extension === 'md' },
+  { type: 'formula', key: KEY.rootFormula, displayName: 'Root formula', placeholder: 'this.file' },
+  { type: 'file', key: KEY.root, displayName: ROOT_NOTE_LABEL, placeholder: 'Choose a Markdown note', filter: (file) => file.extension === 'md' },
   { type: 'property', key: KEY.parent, displayName: 'Parent property', default: 'note.parents', filter: (property) => property.startsWith('note.') },
   { type: 'toggle', key: KEY.includeRoot, displayName: 'Include the root if it matches the query', default: false },
  ];
@@ -29,6 +32,12 @@ export class DescendantView extends BasesView {
   this.registerEvent(plugin.app.metadataCache.on('resolved', refresh));
   this.registerEvent(plugin.app.metadataCache.on('deleted', refresh));
   this.registerEvent(plugin.app.vault.on('rename', refresh));
+  const refreshFormula = () => {
+   const formula = this.config?.get(KEY.rootFormula);
+   if (typeof formula === 'string' && formula.trim()) refresh();
+  };
+  this.registerEvent(plugin.app.workspace.on('active-leaf-change', refreshFormula));
+  this.registerEvent(plugin.app.workspace.on('file-open', refreshFormula));
   this.register(() => { this.disposed = true; if (this.timer !== null) window.clearTimeout(this.timer); this.containerEl.remove(); });
   if (plugin.pro) this.register(plugin.pro.onChange(() => this.onDataUpdated()));
  }
@@ -36,7 +45,17 @@ export class DescendantView extends BasesView {
   if (this.disposed || !this.data) return;
   this.containerEl.empty(); this.matches = []; this.found = [];
   const rawRoot = this.config.get(KEY.root);
-  const file = typeof rawRoot === 'string' && rawRoot.trim() ? this.app.vault.getFileByPath(normalizePath(rawRoot)) ?? this.app.metadataCache.getFirstLinkpathDest(rawRoot, '') : null;
+  const formula = this.config.get(KEY.rootFormula);
+  const fromFormula = typeof formula === 'string' && formula.trim().length > 0;
+  const file = fromFormula
+   ? formulaRoot(this.app, this.config.getEvaluatedFormula(this, KEY.rootFormula), baseSourcePath(this.app, this.containerEl))
+   : typeof rawRoot === 'string' && rawRoot.trim() ? this.app.vault.getFileByPath(normalizePath(rawRoot)) ?? this.app.metadataCache.getFirstLinkpathDest(rawRoot, '') : null;
+  const rootPath = file?.extension === 'md' ? file.path : '';
+  if (rootPath !== this.root) this.page = 0;
+  this.root = rootPath;
+  if (fromFormula && !rootPath) {
+   this.containerEl.createEl('p', { text: `The root formula gives no Markdown note here. Embed the base in a note, or use ${ROOT_NOTE_LABEL}.` }); return;
+  }
   const property = this.config.getAsPropertyId(KEY.parent) ?? (this.config.get(KEY.parent) == null ? 'note.parents' : null);
   if (!file || file.extension !== 'md' || !property || !property.startsWith('note.')) {
    this.containerEl.createEl('p', { text: 'Choose a root note and a note parent property in the view options.' }); return;
@@ -65,7 +84,7 @@ export class DescendantView extends BasesView {
   }
   this.page = Math.min(this.page, Math.max(0, Math.ceil(this.matches.length / 100) - 1));
   const toolbar = this.containerEl.createDiv({ cls: 'bdf-toolbar' });
-  toolbar.createSpan({ cls: 'bdf-title', text: `${file.basename} · ${this.matches.length} matching notes` });
+  toolbar.createSpan({ cls: 'bdf-title', text: `${file.basename} · ${fromFormula ? 'from root formula · ' : ''}${this.matches.length} matching notes` });
   this.containerEl.createEl('p', { cls: 'bdf-scope', text: `Parent property: ${key}. Notes can have more than one parent. Body links do not define a parent.` });
   this.containerEl.createEl('p', { cls: 'bdf-scope', text: 'Bases query order stays in the output. Routes can pass through notes outside that query.' });
   if (unresolved || invalid || pending) this.containerEl.createEl('p', { cls: 'bdf-warning', text: `Vault parent scan: ${unresolved} unresolved links · ${invalid} invalid values · ${pending} notes waiting for metadata. Unresolved links and invalid values cannot form an edge.` });

@@ -1,0 +1,4 @@
+---
+parents: "[[Design]]"
+---
+# Detail

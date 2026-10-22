@@ -1,14 +1,10 @@
 {
 	"id": "bases-descendant-filter",
 	"name": "Bases Descendant Filter",
-	"version": "1.2.0",
+	"version": "1.3.0",
 	"changes": [
-		"New Send feedback command. It opens a page where you can report a problem or suggest an idea.",
-		"Adds a Bases descendant view with multi-parent traversal, cycle handling, and Pro route explanations."
-	],
-	"changes_user": [
-		"New Send feedback command. It opens a page where you can report a problem or suggest an idea.",
-		"Settings now end with a More from NoteMods group, where you can turn this tab off or open it again."
+		"Set Root formula to this.file to use the note that embeds a base as its root.",
+		"A base in the sidebar can follow the active note, with the same depth and Pro route explanations."
 	],
 	"tip": "Intermediate notes can stay outside the Bases query. The view still reads their parent links to connect the root to your notes.",
 	"thanks": "Hi, I am Michael, a solo developer in Poland. Bases Descendant Filter is one of over 100 small plugins that I make. Thank you for using it with Bases. Bases is still new, and your setups teach me a lot.",

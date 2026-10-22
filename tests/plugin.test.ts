@@ -1,10 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { App, BasesViewConfig, StringValue, Modal } from 'obsidian-test-mocks/obsidian';
+import { App, BasesViewConfig, StringValue, Modal, FileValue, LinkValue, ListValue, NullValue, NumberValue } from 'obsidian-test-mocks/obsidian';
 import { findDescendants, descendantRoute, parentLinkTexts } from '../src/core/index';
 import vectors from './vectors/bases-descendant-filter.json';
-import { DescendantView, KEY } from '../src/view';
+import { formulaRoot } from '../src/root';
+import { DescendantView, KEY, viewOptions } from '../src/view';
 import BasesDescendantFilterPlugin from '../src/main';
 import manifest from '../manifest.json';
+import whatsNew from '../src/whats-new.json';
 const views: DescendantView[] = [];
 const plugins: BasesDescendantFilterPlugin[] = [];
 afterEach(() => { for (const v of views.splice(0)) v.unload(); for (const p of plugins.splice(0)) p.onunload(); document.body.empty(); vi.restoreAllMocks(); });
@@ -101,4 +103,94 @@ describe('flat query view', () => {
 
 describe('plugin view ownership',()=>{
  it('unloads an open view when the plugin stops',()=>{const{view,plugin}=setup();expect(view.containerEl.isConnected).toBe(true);plugin.onunload();expect(view.containerEl.isConnected).toBe(false);});
+});
+
+
+describe('formula roots', () => {
+ it('ships the curated update text for this release', () => {
+  expect(whatsNew.version).toBe(manifest.version);
+  expect(whatsNew.changes).toContain('Set Root formula to this.file to use the note that embeds a base as its root.');
+  expect(whatsNew.changes).toContain('A base in the sidebar can follow the active note, with the same depth and Pro route explanations.');
+ });
+ it('does not rescan a fixed-root view on workspace navigation', () => {
+  vi.useFakeTimers();
+  try {
+   const { app, config } = setup();
+   const scan = vi.spyOn(app.vault, 'getMarkdownFiles');
+   for (const formula of [undefined, '', '   ']) {
+    config.set(KEY.rootFormula, formula);
+    app.workspace.trigger('active-leaf-change', null); app.workspace.trigger('file-open', null);
+    vi.advanceTimersByTime(200);
+   }
+   expect(scan).not.toHaveBeenCalled();
+  } finally { vi.useRealTimers(); }
+ });
+ it('offers an opt-in formula without a default', () => {
+  expect(viewOptions().find(o => 'key' in o && o.key === KEY.rootFormula)).toEqual({ type: 'formula', key: KEY.rootFormula, displayName: 'Root formula', placeholder: 'this.file' });
+ });
+ it('accepts file, link, string and single-item list values', () => {
+  const { app } = setup(); const file = app.vault.getFileByPath('Root.md')!;
+  const values = [FileValue.create__(app, file), LinkValue.parseFromString(app, '[[Root]]', ''), new StringValue('Root'), new ListValue([new StringValue('Root')])];
+  for (const value of values) expect(formulaRoot(app as never, value as never, 'Descendants.base')?.path).toBe('Root.md');
+ });
+ it('rejects empty, ambiguous, numeric and non-Markdown results', () => {
+  const { app } = setup([], { ...files, 'Descendants.base': 'views: []' });
+  for (const value of [null, NullValue.value, new StringValue(''), new StringValue(' '), new ListValue([]), new ListValue(['Root', 'Other']), new NumberValue(42), new StringValue('[[Descendants.base]]'), FileValue.create__(app, app.vault.getFileByPath('Descendants.base')!)]) {
+   expect(formulaRoot(app as never, value as never, 'Descendants.base')).toBeNull();
+  }
+ });
+ it('resolves link text relative to the base file and removes aliases and headings', () => {
+  const { app } = setup(); const resolve = vi.spyOn(app.metadataCache, 'getFirstLinkpathDest');
+  formulaRoot(app as never, new StringValue('[[Root#Heading|Name]]') as never, 'Folder/Descendants.base');
+  expect(resolve).toHaveBeenCalledWith('Root', 'Folder/Descendants.base');
+ });
+ it('uses the formula for depth, include-root and Pro route without writing files', () => {
+  const { app, view, plugin, config } = setup(['Bridge.md', 'Leaf.md']);
+  config.set(KEY.rootFormula, 'this.file'); config.set(KEY.includeRoot, true);
+  const evaluate = vi.spyOn(config, 'getEvaluatedFormula').mockReturnValue(FileValue.create__(app, app.vault.getFileByPath('Bridge.md')!));
+  const modify = vi.spyOn(app.vault, 'modify'), create = vi.spyOn(app.vault, 'create'), process = vi.spyOn(app.vault, 'process'), frontmatter = vi.spyOn(app.fileManager, 'processFrontMatter');
+  view.onDataUpdated();
+  expect(evaluate).toHaveBeenCalledWith(view, KEY.rootFormula);
+  expect(view.found.find(n => n.path === 'Leaf.md')?.depth).toBe(1);
+  expect(view.matches.map(e => e.file.path)).toEqual(['Bridge.md', 'Leaf.md']);
+  expect(view.containerEl.textContent).toContain('Bridge · from root formula · 2 matching notes');
+  const route = vi.spyOn(plugin, 'showRoute').mockReturnValue(true);
+  view.containerEl.querySelectorAll('tbody button')[1]!.dispatchEvent(new MouseEvent('click'));
+  expect(route).toHaveBeenCalledWith(['Bridge.md', 'Leaf.md']);
+  for (const spy of [modify, create, process, frontmatter]) expect(spy).not.toHaveBeenCalled();
+ });
+ it('does not fall back for an invalid formula and retains fixed-root behavior for blank formulas', () => {
+  const { view, config } = setup(); config.set(KEY.rootFormula, 'this.file');
+  const evaluate = vi.spyOn(config, 'getEvaluatedFormula').mockReturnValue(NullValue.value);
+  view.onDataUpdated(); expect(view.containerEl.textContent).toContain('The root formula gives no Markdown note here.'); expect(view.containerEl.querySelector('table')).toBeNull();
+  config.set(KEY.rootFormula, '  '); evaluate.mockClear(); view.onDataUpdated();
+  expect(evaluate).not.toHaveBeenCalled(); expect(view.matches.map(e => e.file.path)).toEqual(['Leaf.md', 'Shared.md']);
+ });
+ it('keeps evaluated roots separate across instances and refreshes workspace events after 150 ms', () => {
+  vi.useFakeTimers();
+  try {
+   const first = setup(), second = setup();
+   first.config.set(KEY.rootFormula, 'this.file'); second.config.set(KEY.rootFormula, 'this.file');
+   const a = vi.spyOn(first.config, 'getEvaluatedFormula').mockReturnValue(new StringValue('Root'));
+   vi.spyOn(second.config, 'getEvaluatedFormula').mockReturnValue(new StringValue('Other'));
+   first.view.onDataUpdated(); second.view.onDataUpdated();
+   expect(first.view.matches).toHaveLength(2); expect(second.view.matches.map(e => e.file.path)).toEqual(['Shared.md']);
+   a.mockReturnValue(new StringValue('Other'));
+   first.app.workspace.trigger('active-leaf-change', null); first.app.workspace.trigger('file-open', null);
+   vi.advanceTimersByTime(149); expect(first.view.matches).toHaveLength(2);
+   vi.advanceTimersByTime(1); expect(first.view.matches.map(e => e.file.path)).toEqual(['Shared.md']);
+   first.view.unload(); a.mockClear(); first.app.workspace.trigger('file-open', null); vi.advanceTimersByTime(150); expect(a).not.toHaveBeenCalled();
+  } finally { vi.useRealTimers(); }
+ });
+ it('resets pagination when the evaluated root changes', () => {
+  const query = Array.from({ length: 201 }, (_, i) => `R${i}.md`);
+  const fixtures = Object.fromEntries(query.map(path => [path, '---\nparents: ["[[Root]]", "[[Other]]"]\n---\nNote']));
+  const { view, config } = setup(query, { 'Root.md': '# Root', 'Other.md': '# Other', ...fixtures });
+  config.set(KEY.rootFormula, 'this.file');
+  const evaluate = vi.spyOn(config, 'getEvaluatedFormula').mockReturnValue(new StringValue('Root')); view.onDataUpdated();
+  Array.from(view.containerEl.querySelectorAll('button')).find(b => b.textContent === 'Next notes')!.click();
+  expect(view.containerEl.querySelector('tbody tr')?.getAttribute('data-path')).toBe('R100.md');
+  evaluate.mockReturnValue(new StringValue('Other')); view.onDataUpdated();
+  expect(view.containerEl.querySelector('tbody tr')?.getAttribute('data-path')).toBe('R0.md');
+ });
 });

@@ -1,5 +1,12 @@
 [
   {
+    "feature": "this-root",
+    "caption": "Project A supplies the root of its embedded descendant table.",
+    "note": "Project A.md",
+    "eval": "(async()=>{const leaf=app.workspace.getLeaf(false);await leaf.openFile(app.vault.getFileByPath('Bases Descendant Filter/Project A.md'),{active:true});await leaf.setViewState({type:'markdown',state:{file:'Bases Descendant Filter/Project A.md',mode:'preview'}});for(let i=0;i<100;i++){if(leaf.view.containerEl.querySelector('.bdf-title')?.textContent==='Project A \u00b7 from root formula \u00b7 2 matching notes')return 'ok';await new Promise(r=>setTimeout(r,100));}throw Error('Embedded formula root did not render');})()",
+    "zoom": 0.85
+  },
+  {
     "feature": "descendants",
     "caption": "Follow parent links through hidden intermediates and cycles.",
     "note": "Descendants.base",

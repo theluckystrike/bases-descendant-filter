@@ -1,0 +1,10 @@
+views:
+  - type: bases-descendant-filter
+    name: Embedded descendants
+    descendantRootFormula: this.file
+    descendantParent: note.parents
+    order:
+      - file.name
+    sort:
+      - property: file.name
+        direction: DESC

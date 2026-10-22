@@ -60,3 +60,82 @@ describe(`${pluginId} real parent traversal`, function () {
  });
 
 });
+
+const formulaBase = `filters:\n  and:\n    - file.inFolder("FormulaInputs")\nviews:\n  - type: bases-descendant-filter\n    name: Results\n    descendantRoot: FormulaInputs/Project A.md\n    descendantRootFormula: this.file\n    descendantParent: note.parents\n    order:\n      - file.name\n    sort:\n      - property: file.name\n        direction: ASC\n`;
+async function formulaRows(host: string): Promise<string[]> {
+ return browser.execute((name: string) => Array.from(document.querySelectorAll(`[data-formula-host="${name}"] .bases-descendant-filter tbody tr`)).map(row => `${(row as HTMLElement).dataset.path}:${row.children[1]?.textContent}`), host);
+}
+async function waitFormulaRows(host: string, expected: string[], timeout = 15000): Promise<void> {
+ try {
+  await browser.waitUntil(async () => JSON.stringify(await formulaRows(host)) === JSON.stringify(expected), { timeout, interval: 50, timeoutMsg: `Expected ${host} descendants ${expected.join(', ')}` });
+ } catch (error) {
+  const state = await browser.execute(() => Array.from(document.querySelectorAll('.bases-descendant-filter')).map(el => ({ host: el.closest('[data-formula-host]')?.getAttribute('data-formula-host'), text: el.textContent })));
+  throw new Error(`${String(error)}; views=${JSON.stringify(state)}`);
+ }
+}
+describe(`${pluginId} contextual root formulas`, function () {
+ it('renders Project A descendants at depths one and two in an embed', async () => {
+  expect(await reloadPlugin(pluginId)).toEqual({ enabled: false, reloaded: true, errors: [] });
+  await obsidianPage.write('FormulaInputs/Project A.md', '# Project A\n\n![[FormulaDescendants.base]]');
+  await obsidianPage.write('FormulaInputs/Project B.md', '# Project B\n\n![[FormulaDescendants.base]]');
+  await obsidianPage.write('FormulaInputs/Design.md', note(['Project A']));
+  await obsidianPage.write('FormulaInputs/Detail.md', note(['Design']));
+  await obsidianPage.write('FormulaInputs/B task.md', note(['Project B']));
+  await obsidianPage.write('FormulaDescendants.base', formulaBase);
+  await browser.executeObsidian(async ({ app }) => {
+   const leaf = app.workspace.getLeaf(false);
+   await leaf.openFile(app.vault.getFileByPath('FormulaInputs/Project A.md')!, { active: true });
+   await leaf.setViewState({ type: 'markdown', state: { file: 'FormulaInputs/Project A.md', mode: 'preview' } });
+   leaf.view.containerEl.dataset.formulaHost = 'A';
+  });
+  await waitFormulaRows('A', ['FormulaInputs/Design.md:1', 'FormulaInputs/Detail.md:2']);
+ });
+ it('keeps simultaneous embeds of the same base independent', async () => {
+  await browser.executeObsidian(async ({ app }) => {
+   const leaf = app.workspace.getLeaf('split');
+   await leaf.openFile(app.vault.getFileByPath('FormulaInputs/Project B.md')!, { active: true });
+   await leaf.setViewState({ type: 'markdown', state: { file: 'FormulaInputs/Project B.md', mode: 'preview' } });
+   leaf.view.containerEl.dataset.formulaHost = 'B';
+  });
+  await waitFormulaRows('B', ['FormulaInputs/B task.md:1']);
+  await waitFormulaRows('A', ['FormulaInputs/Design.md:1', 'FormulaInputs/Detail.md:2']);
+ });
+ it('explains the route from the embedding note with Pro', async () => {
+  await browser.executeObsidian(async ({ app }) => {
+   interface TestPro { opts: { http: () => Promise<unknown> }; refreshNow(): Promise<void> }
+   const p = (app as unknown as { plugins: { plugins: Record<string, { pro: TestPro }> } }).plugins.plugins['bases-descendant-filter']!;
+   p.pro.opts.http = async () => ({ status: 200, json: { data: { viewer: { login: 'test-reader' }, user: { sponsorshipForViewerAsSponsor: { isActive: true, isOneTimePayment: false, tier: { name: '$5 a month', monthlyPriceInCents: 500 } } } } } });
+   app.secretStorage.setSecret('bases-descendant-filter-github-token', 'gho_' + '0'.repeat(36)); await p.pro.refreshNow();
+  });
+  await browser.$('[data-formula-host="A"] tr[data-path="FormulaInputs/Detail.md"] button').click();
+  await browser.$('.bdf-route').waitForExist({ timeout: 5000 });
+  expect(await browser.$$('.bdf-route li a').map(link => link.getText())).toEqual(['FormulaInputs/Project A.md', 'FormulaInputs/Design.md', 'FormulaInputs/Detail.md']);
+  await browser.keys('Escape');
+ });
+ it('shows the explicit empty state in a standalone base instead of the fixed fallback', async () => {
+  await obsidianPage.openFile('FormulaDescendants.base');
+  const view = browser.$('.workspace-leaf.mod-active .bases-descendant-filter');
+  await browser.waitUntil(async () => (await view.getText()).includes('The root formula gives no Markdown note here. Embed the base in a note, or use Root note.'), { timeout: 15000 });
+  expect(await view.$('table').isExisting()).toBe(false);
+ });
+ it('follows the active note in a sidebar within one second', async () => {
+  await browser.executeObsidian(async ({ app }) => {
+   const main = app.workspace.getLeaf(false);
+   const side = app.workspace.getRightLeaf(false)!;
+   await side.openFile(app.vault.getFileByPath('FormulaDescendants.base')!, { active: false });
+   await app.workspace.revealLeaf(side);
+   side.view.containerEl.dataset.formulaHost = 'sidebar';
+   await main.openFile(app.vault.getFileByPath('FormulaInputs/Project A.md')!, { active: true });
+   app.workspace.setActiveLeaf(main, { focus: true });
+  });
+  await waitFormulaRows('sidebar', ['FormulaInputs/Design.md:1', 'FormulaInputs/Detail.md:2']);
+  await obsidianPage.openFile('FormulaInputs/Project B.md');
+  await waitFormulaRows('sidebar', ['FormulaInputs/B task.md:1'], 1000);
+ });
+ it('retains the fixed root with an empty formula', async () => {
+  await obsidianPage.write('FormulaFixed.base', formulaBase.replace('descendantRootFormula: this.file', 'descendantRootFormula: ""'));
+  await obsidianPage.openFile('FormulaFixed.base');
+  await waitPaths(['FormulaInputs/Design.md', 'FormulaInputs/Detail.md']);
+  expect(await browser.$('.workspace-leaf.mod-active .bdf-title').getText()).toBe('Project A · 2 matching notes');
+ });
+});

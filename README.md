@@ -2,8 +2,6 @@
 
 Show the notes beneath a chosen root as a flat Bases table. Choose a parent link property. The view follows that property through intermediate notes, then displays the matching notes from your Bases query. A note can have more than one parent. A link in the body of a note does not create a parent relationship.
 
-Use this view for projects with subprojects, places with smaller places, or another hierarchy stored in note properties. You can keep the intermediate notes outside the displayed query. The plugin reads their cached parent properties to connect the root to the notes you want to see.
-
 ## Features
 
 ### Follow a parent property through multiple levels
@@ -13,6 +11,14 @@ Add a Descendants view to a base. Choose a root note in the view options. Choose
 The view follows these links in the parent direction to identify descendants of the root. It handles a note with two parents, including a link in the second list position. A cycle does not repeat a note or cause an endless traversal. The Depth column shows the smallest number of parent edges between the root and the matching note.
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-descendant-filter/HEAD/docs/descendants.png" alt="Flat descendant table with matching notes and shortest depths" width="720">
+
+### Use the note that embeds the base as root
+
+Set Root formula to `this.file`, then embed the base with `![[Descendants.base]]` in Project A. The table follows Project A's descendants. Embed the same base in Project B to see that project's descendants instead. Each embed keeps its own root. In a sidebar, the base follows the active note.
+
+A nonempty formula overrides Root note. It must return one Markdown file, a wikilink such as `[[Project A]]`, a plain note path, or a one-item list of these. An invalid result shows a message and no table. Opening this base in its own tab also shows that message because `this.file` is the base file. Clear Root formula to use Root note again. Formula selection and depth are free; route explanations remain Pro. The plugin writes no note properties.
+
+<img src="https://raw.githubusercontent.com/theluckystrike/bases-descendant-filter/HEAD/docs/this-root.png" alt="Project A embedding a descendant table with Design at depth one and Detail at depth two" width="720">
 
 ### Keep the visible Bases query and property columns
 
@@ -34,8 +40,6 @@ The warning counts describe the vault parent scan, so they can include a note ou
 
 Select Explain route beside a matching note. Pro opens a modal with one shortest route from the root to that note. The route includes intermediate notes that do not appear in the table. Each path is a link to its source note.
 
-Use the explanation to check why a result belongs under a root. Use it when a note has multiple parents or when the graph contains a cycle. More than one shortest route can exist. The modal shows one route, so it does not claim to list the possible alternatives. It captures the route when you open it. Reopen the explanation after you edit a parent link.
-
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-descendant-filter/HEAD/docs/route.png" alt="Pro route explanation linking the root through hidden intermediate notes" width="720">
 
 <img src="https://raw.githubusercontent.com/theluckystrike/bases-descendant-filter/HEAD/docs/walkthrough.gif" alt="Select a descendant and open its route explanation" width="720">
@@ -50,13 +54,15 @@ Create a root note named Project A. Create a note named Design. Give Design a `p
 
 Open a base that selects Detail. Add a view with the Descendants layout. Choose Project A as its Root note. Choose parents as its Parent property. Detail should appear with depth 2, even when Design is outside the query. A separate note that only mentions Project A in its body should not appear as a descendant.
 
-To add another parent, change the property to a list. Put one wiki link in each item. The order of that list does not decide whether a note matches. The plugin resolves each link relative to the note that contains it. A heading or block target still refers to the parent note for this calculation.
-
 ## Settings
+
+| View option | Effect |
+| --- | --- |
+| Root formula | Optional formula such as `this.file`; overrides Root note when nonempty. |
 
 After a minor or major update, this plugin opens one What's new tab in the background. The tab and settings card suggest other NoteMods plugins and Zovo Chat and link to notemods.com for feedback ([privacy](https://notemods.com/privacy/)). The tab sends no data. Turn the tab off in Settings.
 
-Root note, Parent property, and Include the root if it matches the query belong to the current view. The root is excluded by default. Enable the option when you want it in the output, and make sure the Bases query selects it too. If the root moves and the saved selection no longer resolves, choose its new path.
+Root formula, Root note, Parent property, and Include the root if it matches the query belong to the current view. The root is excluded by default. Enable the option when you want it in the output, and make sure the Bases query selects it too. If the root moves and the saved selection no longer resolves, choose its new path.
 
 The result table shows 100 notes per page. Use Next notes and Previous notes to inspect a larger result. This page size does not limit graph traversal. The table does not edit properties. Open a source note to change its parent links or other values.
 
