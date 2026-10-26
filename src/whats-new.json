@@ -1,10 +1,9 @@
 {
 	"id": "bases-descendant-filter",
 	"name": "Bases Descendant Filter",
-	"version": "1.3.0",
+	"version": "1.3.1",
 	"changes": [
-		"Set Root formula to this.file to use the note that embeds a base as its root.",
-		"A base in the sidebar can follow the active note, with the same depth and Pro route explanations."
+		"The Pro notice for route explanations now has a Sponsor on GitHub button."
 	],
 	"tip": "Intermediate notes can stay outside the Bases query. The view still reads their parent links to connect the root to your notes.",
 	"thanks": "Hi, I am Michael, a solo developer in Poland. Bases Descendant Filter is one of over 100 small plugins that I make. Thank you for using it with Bases. Bases is still new, and your setups teach me a lot.",

@@ -20,7 +20,7 @@ const files = {
 };
 function setup(query = ['Leaf.md', 'Shared.md', 'Mention.md'], fixtures: Record<string, string> = files) {
  const app = App.createConfigured__({ files: fixtures }); const plugin = new BasesDescendantFilterPlugin(app as never, manifest as never);
- plugin.pro = { isPro: () => false, onChange: () => () => undefined } as never; plugins.push(plugin);
+ plugin.pro = { isPro: () => false, getState: () => ({ status: 'signed-out', lastAttemptAt: 0 }), hasToken: () => false, config: { sponsorLogin: 'theluckystrike' }, onChange: () => () => undefined } as never; plugins.push(plugin);
  const view = plugin.createView({} as never, document.body.createDiv()); view.app = app as never; view.load(); views.push(view);
  const config = BasesViewConfig.create__('', 'bases-descendant-filter', 'Descendants'); config.set(KEY.root, 'Root.md'); config.setOrder(['file.name', 'note.status']); view.config = config as never;
  const entries = query.map(path => ({ file: app.vault.getFileByPath(path)!, getValue: () => new StringValue('Ready') }));
@@ -107,10 +107,9 @@ describe('plugin view ownership',()=>{
 
 
 describe('formula roots', () => {
- it('ships the curated update text for this release', () => {
+ it('ships the update text for this release', () => {
   expect(whatsNew.version).toBe(manifest.version);
-  expect(whatsNew.changes).toContain('Set Root formula to this.file to use the note that embeds a base as its root.');
-  expect(whatsNew.changes).toContain('A base in the sidebar can follow the active note, with the same depth and Pro route explanations.');
+  expect(whatsNew.changes).toContain('The Pro notice for route explanations now has a Sponsor on GitHub button.');
  });
  it('does not rescan a fixed-root view on workspace navigation', () => {
   vi.useFakeTimers();

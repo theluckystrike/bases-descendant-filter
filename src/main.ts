@@ -1,5 +1,5 @@
 import { Notice, Plugin, type QueryController } from 'obsidian';
-import { createGitHubSponsors } from './license/github-obsidian';
+import { createGitHubSponsors, showProNotice } from './license/github-obsidian';
 import type { SponsorsManager } from './license/index';
 import { SPONSORS } from './pro';
 import { BasesDescendantFilterSettingTab } from './settings';
@@ -32,7 +32,7 @@ export default class BasesDescendantFilterPlugin extends Plugin {
  onunload(): void { this.disposed = true; for (const view of this.views) view.unload(); this.views.clear(); this.modal?.close(); this.modal = null; }
  showRoute(paths: string[]): boolean {
   if (this.disposed) return false;
-  if (!this.pro?.isPro()) { new Notice('Pro is needed to explain a route. Sign in from the plugin settings.'); return false; }
+  if (!this.pro?.isPro()) { showProNotice(this.pro, 'Pro is needed to explain a route.'); return false; }
   if (!paths.length) { new Notice('This route is no longer available.'); return false; }
   this.modal?.close(); this.modal = new RouteModal(this.app, paths); this.modal.open(); return true;
  }

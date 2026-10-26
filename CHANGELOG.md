@@ -1,5 +1,11 @@
 # bases-descendant-filter
 
+## 1.3.1
+
+### Patch Changes
+
+- The Pro notice for route explanations now has a Sponsor on GitHub button.
+
 ## 1.3.0
 
 ### Minor Changes

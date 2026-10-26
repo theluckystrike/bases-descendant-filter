@@ -1,7 +1,7 @@
 {
 	"id": "bases-descendant-filter",
 	"name": "Bases Descendant Filter",
-	"version": "1.3.0",
+	"version": "1.3.1",
 	"minAppVersion": "1.13.4",
 	"description": "Show Bases results that descend from a root through a note property.",
 	"author": "Michael Lip",
