@@ -2,6 +2,28 @@
 
 Show the notes beneath a chosen root as a flat Bases table. Choose a parent link property. The view follows that property through intermediate notes, then displays the matching notes from your Bases query. A note can have more than one parent. A link in the body of a note does not create a parent relationship.
 
+## Quick start
+
+1. Make three notes: `Project A`, `Design` and `Detail`. Paste this text at the start of `Design`:
+
+```yaml
+---
+parents: "[[Project A]]"
+---
+```
+
+2. Paste this text at the start of `Detail`:
+
+```yaml
+---
+parents: "[[Design]]"
+---
+```
+
+3. Open a base that lists the notes. Select the view menu in the base toolbar. Add a view of the type "Descendants".
+4. In the view options, choose `Project A` in "Root note". Keep `parents` in "Parent property".
+5. Make sure that the table shows Design with depth 1 and Detail with depth 2.
+
 ## Features
 
 ### Follow a parent property through multiple levels
@@ -84,7 +106,7 @@ No. Traversal, multiple parents, cycle handling, depth, and input warnings stay 
 
 The core features are free. Pro features need a GitHub Sponsors sponsorship of theluckystrike: $5 a month or more, or $15 once. A total payment of $15 meets the payment requirement for Pro without further payment. Sign-in and the checks below still apply. Your notes stay readable and editable with or without Pro.
 
-GitHub handles the payment. Sponsor at https://github.com/sponsors/theluckystrike. You need no account for the free features. Pro needs the GitHub account that sponsors.
+GitHub handles the payment. Sponsor at https://github.com/sponsors/theluckystrike?frequency=one-time&metadata_source=bases-descendant-filter. You need no account for the free features. Pro needs the GitHub account that sponsors.
 
 Until you select "Sign in with GitHub" in the settings, Bases Descendant Filter makes no network requests. Sign in uses the GitHub device flow. Bases Descendant Filter sends its public client ID and the scope `read:user` to `https://github.com/login/device/code` and shows you a code. While you enter the code at https://github.com/login/device, it asks `https://github.com/login/oauth/access_token` every few seconds to check the sign-in status. The scope permits profile reads only. GitHub needs this access to show the sponsorship tier. It grants no repository scope and no write access.
 
