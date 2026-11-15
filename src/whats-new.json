@@ -1,7 +1,7 @@
 {
 	"id": "bases-descendant-filter",
 	"name": "Bases Descendant Filter",
-	"version": "1.3.2",
+	"version": "1.3.3",
 	"changes": [
 		"The Pro notice of Bases Descendant Filter now says that one payment turns on Pro in every NoteMods plugin.",
 		"The Pro notice for route explanations now has a Sponsor on GitHub button."
